@@ -82,6 +82,8 @@ def from_atoca(rainbow, filepath, order=1):
     # Loop over all input filenames.
     for i_file, f in enumerate(tqdm(filenames, leave=False)):
         hdu_list = fits.open(f)
+        # Add a flag to check if extract1d extension exists.
+        has_extract1d = False
 
         # Useful initializations for later.
         quantities = {}
@@ -100,6 +102,8 @@ def from_atoca(rainbow, filepath, order=1):
                 continue
             if hdu_list[i].header["SPORDER"] != order:
                 continue
+            # If we find a good extension, flip the flag.
+            has_extract1d = True
             # Unpack each of the data types stored in each extension.
             # This includes the usual wavelength, flux, and error, but also
             # many other things which may or may not be useful (or even
@@ -112,6 +116,12 @@ def from_atoca(rainbow, filepath, order=1):
                         [quantities[quantity], hdu_list[i].data[quantity]]
                     )
             first_time = False
+
+    # Check if any extract1d extensions were found.
+    if not has_extract1d:
+        raise ValueError(
+            "No EXTRACT1D extensions found for order {} in {}.".format(order, f)
+        )
 
     # Pack all the above data into a Rainbow object.
     for quantity in quantities.keys():

@@ -208,6 +208,10 @@ def from_x1dints(rainbow, filepath, order=None, **kw):
         # open this fits file
         with fits.open(f) as hdu:
 
+            # Check if an EXTRACT1D extension exists before we do anything else.
+            if "EXTRACT1D" not in hdu:
+                raise ValueError(f"No EXTRACT1D extension found in {f}.")
+
             # if this is the first one, populate the shared stuff
             if i_file == 0:
 
